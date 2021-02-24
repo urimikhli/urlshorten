@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :shorten do
-    slug { "MyString" }
-    full_url { "MyString" }
+    slug { "slug" }
+    full_url { "Full/URL/this/can/be/long" }
   end
 end
