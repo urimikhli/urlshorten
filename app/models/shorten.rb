@@ -1,4 +1,4 @@
 class Shorten < ApplicationRecord
-    validates :slug, presence: true
+    validates :slug, :full_url, presence: true
     validates :slug, uniqueness: { case_sensitive: false }
 end
