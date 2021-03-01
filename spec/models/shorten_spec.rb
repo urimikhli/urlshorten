@@ -2,12 +2,16 @@ require 'rails_helper'
 
 RSpec.describe Shorten, type: :model do
   describe '#validations' do
-    let(:shorten) { create(:shorten) }
-    let(:shorten_another) { build(:shorten) }
+    #Use static slug values to test validations
+    let(:shorten) { create(:shorten, slug: 'slug') }
+    let(:shorten_another) { build(:shorten, slug: 'slug') }
+    #same slug with different case
+    let(:shorten_case) { build(:shorten, slug: 'Slug') }
 
     before do
       shorten
       shorten_another
+      shorten_case
     end
 
     it 'tests that factory is valid' do
@@ -29,13 +33,11 @@ RSpec.describe Shorten, type: :model do
     it ' slugs should be uniq' do
       #puts("shorten: ", shorten.to_json)
       #slugs are factory built as identical
-      # TODO: make factory give uniq slugs
       expect(shorten_another).not_to be_valid
     end
 
     it ' slug uniqueness should be case insensative' do
-      shorten_another.slug = "Slug"
-      expect(shorten_another).not_to be_valid
+      expect(shorten_case).not_to be_valid
     end
 
   end
