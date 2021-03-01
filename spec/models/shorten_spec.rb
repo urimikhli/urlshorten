@@ -2,14 +2,19 @@ require 'rails_helper'
 
 RSpec.describe Shorten, type: :model do
   describe '#validations' do
+    #Factory needs to be tested with the arbitrary non null values
+    let(:shorten) { build(:shorten) }
+
     #Use static slug values to test validations
-    let(:shorten) { create(:shorten, slug: 'slug') }
+    let(:shorten_static) { create(:shorten, slug: 'slug') }
     let(:shorten_another) { build(:shorten, slug: 'slug') }
-    #same slug with different case
+    
+    #same slug with same slugm, but different case
     let(:shorten_case) { build(:shorten, slug: 'Slug') }
 
     before do
       shorten
+      shorten_static
       shorten_another
       shorten_case
     end
@@ -19,15 +24,15 @@ RSpec.describe Shorten, type: :model do
     end
 
     it ' has an invalid slug' do
-      shorten.slug = ''
-      expect(shorten).not_to be_valid
-      expect(shorten.errors[:slug]).to include("can't be blank")
+      shorten_static.slug = ''
+      expect(shorten_static).not_to be_valid
+      expect(shorten_static.errors[:slug]).to include("can't be blank")
     end
 
     it ' has an invalid full_url' do
-      shorten.full_url = ''
-      expect(shorten).not_to be_valid
-      expect(shorten.errors[:full_url]).to include("can't be blank")
+      shorten_static.full_url = ''
+      expect(shorten_static).not_to be_valid
+      expect(shorten_static.errors[:full_url]).to include("can't be blank")
     end
 
     it ' slugs should be uniq' do
