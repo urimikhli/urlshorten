@@ -8,9 +8,10 @@ class ShortensController < ApplicationController
     render json: @shortens
   end
 
-  # GET /shortens/1
+  # GET /shortens/slug
   def show
-    render json: @shorten
+    redirect_to @shorten.full_url
+    #render json: @shorten
   end
 
   # POST /shortens
@@ -41,7 +42,8 @@ class ShortensController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_shorten
-      @shorten = Shorten.find(params[:id])
+      short = Shorten.select{|url| url.slug == params[:slug]}
+      @shorten = short.last ? short.last : Shorten.new(full_url:'/notfound')
     end
 
     # Only allow a list of trusted parameters through.
