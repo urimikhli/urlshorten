@@ -9,7 +9,7 @@ RSpec.describe Shorten, type: :model do
     let(:shorten_static) { create(:shorten, slug: 'slug') }
     let(:shorten_another) { build(:shorten, slug: 'slug') }
     
-    #same slug with same slugm, but different case
+    #same slug with same slug, but different case
     let(:shorten_case) { build(:shorten, slug: 'Slug') }
 
     before do

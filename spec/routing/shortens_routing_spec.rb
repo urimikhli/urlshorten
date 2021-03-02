@@ -7,7 +7,10 @@ RSpec.describe ShortensController, type: :routing do
     end
 
     it "routes to #show" do
-      expect(get: "/shortens/1").to route_to("shortens#show", id: "1")
+      expect(get: "/shortens/6").not_to route_to("shortens#show", id: "6")
+      #need to route to :slug rather then :id
+      expect(get: "/shortens/myslug").to route_to("shortens#show", slug: "myslug")
+
     end
 
 
