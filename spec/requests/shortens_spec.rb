@@ -1,16 +1,20 @@
 require 'rails_helper'
 
 RSpec.describe "/shortens", type: :request do
-  let(:valid_attributes) {
-    skip("Add a hash of attributes invalid for your model")
-  }
-
-  let(:invalid_attributes) {
-    skip("Add a hash of attributes invalid for your model")
-  }
   let(:shorten) {
     create(:shorten, full_url: 'http://google.com')
   }
+
+  let (:shortens_url) { "/shortens/" }
+
+  let(:valid_attributes) {
+    attributes_for(:shorten)
+  }
+
+  let(:invalid_attributes) {
+    bad_attributes_for(attributes_for(:shorten))
+  }
+
 
   # This should return the minimal set of values that should be in the headers
   # in order to pass any filters (e.g. authentication) defined in
@@ -31,12 +35,12 @@ RSpec.describe "/shortens", type: :request do
   describe "GET /show" do
     it "renders a successful response" do
       puts "requested:",shorten.to_json
-      get "/shortens/#{shorten.slug}"
+      get shortens_url + shorten.slug
       expect(response).to have_http_status(:redirect)
     end
   end
 
-  skip "POST /create" do
+  describe "POST /create" do
     context "with valid parameters" do
       it "creates a new Shorten" do
         expect {
@@ -65,7 +69,7 @@ RSpec.describe "/shortens", type: :request do
         post shortens_url,
              params: { shorten: invalid_attributes }, headers: valid_headers, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to eq("application/json")
+        expect(response.content_type).to match(a_string_including("application/json"))
       end
     end
   end
@@ -111,5 +115,12 @@ RSpec.describe "/shortens", type: :request do
         delete shorten_url(shorten), headers: valid_headers, as: :json
       }.to change(Shorten, :count).by(-1)
     end
+  end
+
+  private
+
+  def bad_attributes_for(bad_values)
+    bad_values['slug']=''
+    bad_values
   end
 end
