@@ -5,8 +5,6 @@ RSpec.describe "/shortens", type: :request do
     create(:shorten, full_url: 'http://google.com')
   }
 
-  let (:shortens_url) { "/shortens/" }
-
   let(:valid_attributes) {
     attributes_for(:shorten)
   }
@@ -35,7 +33,7 @@ RSpec.describe "/shortens", type: :request do
   describe "GET /show" do
     it "renders a successful response" do
       puts "requested:",shorten.to_json
-      get shortens_url + shorten.slug
+      get "#{shortens_url}/#{shorten.slug}"
       expect(response).to have_http_status(:redirect)
     end
   end
