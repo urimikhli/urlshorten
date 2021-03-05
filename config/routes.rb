@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
-  resources :shortens, only: %i[show create], param: :slug
+  # no index route, Eventually will redirect to current User urlShortens list.
+  resources :shortens, only: %i[show create update destroy], param: :slug
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 end

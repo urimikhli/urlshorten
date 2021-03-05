@@ -2,6 +2,7 @@ class ShortensController < ApplicationController
   before_action :set_shorten, only: [:show, :update, :destroy]
 
   # GET /shortens
+  # no route, Eventually will redirect to current User urlShortens list.
   def index
     @shortens = Shorten.all
 

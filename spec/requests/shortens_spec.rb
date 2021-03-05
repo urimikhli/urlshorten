@@ -22,6 +22,7 @@ RSpec.describe "/shortens", type: :request do
     {}
   }
 
+  # no route, Eventually will redirect to current User urlShortens list.
   skip "GET /index" do
     it "renders a successful response" do
       Shorten.create! valid_attributes
@@ -32,7 +33,6 @@ RSpec.describe "/shortens", type: :request do
 
   describe "GET /show" do
     it "renders a successful response" do
-      puts "requested:",shorten.to_json
       get "#{shortens_url}/#{shorten.slug}"
       expect(response).to have_http_status(:redirect)
     end
@@ -72,27 +72,22 @@ RSpec.describe "/shortens", type: :request do
     end
   end
 
-  skip "PATCH /update" do
-    context "with valid parameters" do
-      let(:new_attributes) {
-        skip("Add a hash of attributes valid for your model")
+  describe "PATCH /update" do
+    let(:new_attributes) {
+      { full_url: "http://new/url/",
+        slug: 'validSlug'
       }
+    }
 
-      it "updates the requested shorten" do
-        shorten = Shorten.create! valid_attributes
-        patch shorten_url(shorten),
-              params: { shorten: new_attributes }, headers: valid_headers, as: :json
+    it "updates the requested shorten" do
+      shorten = Shorten.create! valid_attributes
+      expect {
+        patch shorten_url(shorten.slug),
+            params: { shorten: new_attributes }, headers: valid_headers, as: :json
         shorten.reload
-        skip("Add assertions for updated state")
-      end
-
-      it "renders a JSON response with the shorten" do
-        shorten = Shorten.create! valid_attributes
-        patch shorten_url(shorten),
-              params: { shorten: new_attributes }, headers: valid_headers, as: :json
-        expect(response).to have_http_status(:ok)
-        expect(response.content_type).to match(a_string_including("application/json"))
-      end
+      }.to change(Shorten, :count).by(0)
+      expect(response).to have_http_status(:ok)
+      expect(response.content_type).to match(a_string_including("application/json"))
     end
 
     context "with invalid parameters" do
@@ -101,16 +96,16 @@ RSpec.describe "/shortens", type: :request do
         patch shorten_url(shorten),
               params: { shorten: invalid_attributes }, headers: valid_headers, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to eq("application/json")
+        expect(response.content_type).to match(a_string_including("application/json"))
       end
     end
   end
 
-  skip "DELETE /destroy" do
+  describe "DELETE /destroy" do
     it "destroys the requested shorten" do
       shorten = Shorten.create! valid_attributes
       expect {
-        delete shorten_url(shorten), headers: valid_headers, as: :json
+        delete shorten_url(shorten.slug), headers: valid_headers, as: :json
       }.to change(Shorten, :count).by(-1)
     end
   end

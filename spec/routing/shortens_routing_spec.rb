@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe ShortensController, type: :routing do
   describe "routing" do
+    # no route, Eventually will redirect to current User urlShortens list.
     skip "routes to #index" do
       expect(get: "/shortens").to route_to("shortens#index")
     end
@@ -13,21 +14,23 @@ RSpec.describe ShortensController, type: :routing do
 
     end
 
-
-    skip "routes to #create" do
+    it "routes to #create" do
       expect(post: "/shortens").to route_to("shortens#create")
     end
 
-    skip "routes to #update via PUT" do
-      expect(put: "/shortens/1").to route_to("shortens#update", id: "1")
+    it "routes to #update via PUT" do
+      expect(get: "/shortens/6").not_to route_to("shortens#update", id: "6")
+      expect(put: "/shortens/myslug").to route_to("shortens#update", slug: "myslug")
     end
 
-    skip "routes to #update via PATCH" do
-      expect(patch: "/shortens/1").to route_to("shortens#update", id: "1")
+    it "routes to #update via PATCH" do
+      expect(get: "/shortens/6").not_to route_to("shortens#update", id: "6")
+      expect(patch: "/shortens/myslug").to route_to("shortens#update", slug: "myslug")
     end
 
-    skip "routes to #destroy" do
-      expect(delete: "/shortens/1").to route_to("shortens#destroy", id: "1")
+    it "routes to #destroy" do
+      expect(get: "/shortens/6").not_to route_to("shortens#destroy", id: "6")
+      expect(delete: "/shortens/myslug").to route_to("shortens#destroy", slug: "myslug")
     end
   end
 end
