@@ -5,6 +5,11 @@ RSpec.describe "/shortens", type: :request do
     create(:shorten, full_url: 'http://google.com')
   }
 
+  let(:invalid_slug) {
+    shorten.slug='NotValidSlug'
+    shorten
+  }
+
   let(:valid_attributes) {
     attributes_for(:shorten)
   }
@@ -35,6 +40,12 @@ RSpec.describe "/shortens", type: :request do
     it "renders a successful response" do
       get "#{shortens_url}/#{shorten.slug}"
       expect(response).to have_http_status(:redirect)
+    end
+
+    it "renders 404 when slug is not found" do
+      get shorten_url(invalid_slug.slug)
+      expect(response).to have_http_status(:not_found)
+      expect(response.body).to match(a_string_including("not found"))
     end
   end
 

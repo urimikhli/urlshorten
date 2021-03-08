@@ -11,7 +11,12 @@ class ShortensController < ApplicationController
 
   # GET /shortens/slug
   def show
-    redirect_to @shorten.full_url
+    if @shorten
+      redirect_to @shorten.full_url
+    else
+      render json: "'#{params['slug']}' not found", status: :not_found
+    end
+
     #render json: @shorten
   end
 
@@ -43,8 +48,7 @@ class ShortensController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_shorten
-      short = Shorten.select{|url| url.slug == params[:slug]}
-      @shorten = short.last ? short.last : Shorten.new(full_url:'/notfound')
+      @shorten = Shorten.find{|url| url.slug == params[:slug]}
     end
 
     # Only allow a list of trusted parameters through.
