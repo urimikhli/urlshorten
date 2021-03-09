@@ -40,7 +40,7 @@ RSpec.describe "/shortens", type: :request do
     it "renders a successful response" do
       get "#{shortens_url}/#{shorten.slug}"
       expect(response).to have_http_status(:redirect)
-      expect(response.location).to match(a_string_including("http://google.com"))
+      expect(response.location).to match(a_string_including("#{shorten.full_url}"))
     end
 
     it "renders 404 when slug is not found" do
