@@ -31,12 +31,13 @@ class ShortensController < ApplicationController
     end
   end
 
-  # PATCH/PUT /shortens/1
+  # PATCH/PUT /shortens/slug
   def update
-    if @shorten.update(shorten_params)
+    if @shorten
+      @shorten.update(shorten_params)
       render json: @shorten
     else
-      render json: @shorten.errors, status: :unprocessable_entity
+      render json: " cant update, '#{params['slug']}' not found", status: :unprocessable_entity
     end
   end
 
