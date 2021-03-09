@@ -1,5 +1,6 @@
 class ShortensController < ApplicationController
   before_action :set_shorten, only: [:show, :update, :destroy]
+  include ShortensHelper
 
   # GET /shortens
   # no route, Eventually will redirect to current User urlShortens list.
@@ -12,7 +13,7 @@ class ShortensController < ApplicationController
   # GET /shortens/slug
   def show
     if @shorten
-      redirect_to @shorten.full_url
+      redirect_to generate_url(@shorten.full_url, request.query_parameters)
     else
       render json: "'#{params['slug']}' not found", status: :not_found
     end
