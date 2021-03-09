@@ -48,6 +48,20 @@ RSpec.describe "/shortens", type: :request do
       expect(response).to have_http_status(:not_found)
       expect(response.body).to match(a_string_including("not found"))
     end
+
+    it "passes along parameters along with the slug" do
+      #TODO: using THis hash requires more complex error handeling, will leave for later
+      #params_hash = Faker::CryptoCoin.coin_hash
+
+      params_hash = Faker::Types.rb_hash(number: 2)
+
+      get "#{shortens_url}/#{shorten.slug}?#{params_hash.to_query}"
+      expect(response.location).to match(a_string_including("#{shorten.full_url}?"))
+
+      params_hash.keys.each do |name|
+        expect(response.location).to match(a_string_including("#{name.to_sym}=#{params_hash[name]}"))
+      end
+    end
   end
 
   describe "POST /create" do
