@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe ShortensController, type: :routing do
   describe "routing" do
     # no route, Eventually will redirect to current User urlShortens list.
-    skip "routes to #index" do
+    it "routes to #index" do
       expect(get: "/shortens").to route_to("shortens#index")
     end
 

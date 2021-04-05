@@ -28,11 +28,20 @@ RSpec.describe "/shortens", type: :request do
   }
 
   # no route, Eventually will redirect to current User urlShortens list.
-  skip "GET /index" do
+  describe "GET /index" do
+    before :each do
+      shorten
+    end
     it "renders a successful response" do
-      Shorten.create! valid_attributes
       get shortens_url, headers: valid_headers, as: :json
       expect(response).to be_successful
+      expect(json.length).to eq(1)
+      expected = json.first.deep_symbolize_keys
+      aggregate_failures do
+        expect(expected[:id]).to eq(shorten.id)
+        expect(expected[:slug]).to eq(shorten.slug)
+        expect(expected[:full_url]).to eq(shorten.full_url)
+      end
     end
   end
 

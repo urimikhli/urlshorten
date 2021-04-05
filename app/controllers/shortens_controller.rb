@@ -3,7 +3,7 @@ class ShortensController < ApplicationController
   include ShortensHelper
 
   # GET /shortens
-  # no route, Eventually will redirect to current User urlShortens list.
+  #  Eventually will redirect to current User urlShortens list '/user/shortens/'.
   def index
     @shortens = Shorten.all
 
