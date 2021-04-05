@@ -32,7 +32,7 @@ RSpec.describe "/shortens", type: :request do
     before :each do
       shorten
     end
-    it "renders a successful response" do
+    it "renders a list of shortens objects" do
       get shortens_url, headers: valid_headers, as: :json
       expect(response).to be_successful
       expect(json.length).to eq(1)
@@ -46,7 +46,7 @@ RSpec.describe "/shortens", type: :request do
   end
 
   describe "GET /show" do
-    it "renders a successful response" do
+    it "redirects to the full_url Successfuly" do
       get "#{shortens_url}/#{shorten.slug}"
       expect(response).to have_http_status(:redirect)
       expect(response.location).to match(a_string_including("#{shorten.full_url}"))
@@ -58,7 +58,7 @@ RSpec.describe "/shortens", type: :request do
       expect(response.body).to match(a_string_including("not found"))
     end
 
-    it "passes along parameters along with the slug" do
+    it "When redirecting, passes along parameters along with the slug" do
       #TODO: using THis hash requires more complex error handeling, will leave for later
       #params_hash = Faker::CryptoCoin.coin_hash
 
