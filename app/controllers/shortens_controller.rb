@@ -1,16 +1,17 @@
-class ShortensController < ApplicationController
-  before_action :set_shorten, only: [:show, :update, :destroy]
+class ShortensController < JSONAPI::ResourceController # ApplicationController
+  skip_before_action :verify_authenticity_token
+  before_action :set_shorten, only: [:show]
   include ShortensHelper
 
   # GET /shortens
   #  Eventually will redirect to current User urlShortens list '/user/shortens/'.
-  def index
-    @shortens = Shorten.all
+  # def index
+  #   let jsonapi manage it
+  # end
 
-    render json: @shortens
-  end
 
   # GET /shortens/slug
+  #this is the redirect
   def show
     if @shorten
       redirect_to generate_url(@shorten.full_url, request.query_parameters)
@@ -18,43 +19,31 @@ class ShortensController < ApplicationController
       render json: "'#{params['slug']}' not found", status: :not_found
     end
 
-    #render json: @shorten
   end
 
-  # POST /shortens
-  def create
-    @shorten = Shorten.new(shorten_params)
+  # # POST /shortens
+  # def create
+  #   let jsonapi manage it
+  # end
 
-    if @shorten.save
-      render json: @shorten, status: :created, location: @shorten
-    else
-      render json: @shorten.errors, status: :unprocessable_entity
-    end
-  end
+  # # PATCH/PUT /shortens/slug
+  #  def update
+  #   let jsonapi manage it
+  #  end
 
-  # PATCH/PUT /shortens/slug
-  def update
-    if @shorten
-      @shorten.update(shorten_params)
-      render json: @shorten
-    else
-      render json: " cant update, '#{params['slug']}' not found", status: :unprocessable_entity
-    end
-  end
-
-  # DELETE /shortens/1
-  def destroy
-    @shorten.destroy
-  end
+  # # DELETE /shortens/1
+  # def destroy
+  #   let jsonapi manage it
+  # end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
+    #needed for SHOW action.
     def set_shorten
       @shorten = Shorten.find{|url| url.slug == params[:slug]}
     end
 
-    # Only allow a list of trusted parameters through.
-    def shorten_params
-      params.require(:shorten).permit(:slug, :full_url)
-    end
+    # # Only allow a list of trusted parameters through.
+    # def shorten_params
+    #   let jsonapi manage it
+    # end
 end
