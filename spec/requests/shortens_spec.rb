@@ -24,7 +24,7 @@ RSpec.describe "/shortens", type: :request do
   # ShortensController, or in your router and rack
   # middleware. Be sure to keep this updated too.
   let(:valid_headers) {
-    {}
+    {"Content-Type":"application/vnd.api+json"}
   }
 
   # no route, Eventually will redirect to current User urlShortens list.
@@ -33,14 +33,14 @@ RSpec.describe "/shortens", type: :request do
       shorten
     end
     it "renders a list of shortens objects" do
-      get shortens_url, headers: valid_headers, as: :json
+      get shortens_url, headers: valid_headers, as: 'vnd.api+json'
       expect(response).to be_successful
       expect(json.length).to eq(1)
-      expected = json.first.deep_symbolize_keys
+      expected = json_data.first.deep_symbolize_keys
       aggregate_failures do
-        expect(expected[:id]).to eq(shorten.id)
-        expect(expected[:slug]).to eq(shorten.slug)
-        expect(expected[:full_url]).to eq(shorten.full_url)
+        expect(expected[:id]).to eq(shorten.id.to_s)
+        expect(expected[:attributes][:slug]).to eq(shorten.slug)
+        expect(expected[:attributes][:"full_url"]).to eq(shorten.full_url)
       end
     end
   end
