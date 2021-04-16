@@ -55,7 +55,7 @@ RSpec.describe "/shortens", type: :request do
       aggregate_failures do
         expect(expected[:id]).to eq(shorten.id.to_s)
         expect(expected[:attributes][:slug]).to eq(shorten.slug)
-        expect(expected[:attributes][:"full_url"]).to eq(shorten.full_url)
+        expect(expected[:attributes][:"full-url"]).to eq(shorten.full_url)
       end
     end
   end
@@ -90,6 +90,7 @@ RSpec.describe "/shortens", type: :request do
 
   describe "POST /create" do
     context "with valid parameters" do
+
     before :each do
       shorten
     end
