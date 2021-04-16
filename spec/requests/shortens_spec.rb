@@ -14,38 +14,23 @@ RSpec.describe "/shortens", type: :request do
     attributes_for(:shorten)
   }
 
-   let(:valid_jsonapi) do
-       { "data":  {
-                   "type": "shortens",
-                   "attributes": {
-                     "slug": valid_attributes[:slug].to_s,
-                     "full-url": valid_attributes[:full_url].to_s
-                   } 
-                 } 
-               }
-   end
- #let(:valid_jsonapi) do 
- # { "data": {
- #       "type": "shortens",
- #       "attributes": {
- #           "slug": "foo",
- #           "full-url": "yahoo.com"
- #       }
- #     }
- # }
- # end 
-
   let(:invalid_attributes) {
     bad_attributes_for(attributes_for(:shorten))
   }
 
+  let(:valid_jsonapi) do
+    {
+      "type": "shortens",
+      "attributes": {
+        "slug": valid_attributes[:slug].to_s,
+        "full-url": valid_attributes[:full_url].to_s
+      }
+    }
+  end 
 
-  # This should return the minimal set of values that should be in the headers
-  # in order to pass any filters (e.g. authentication) defined in
-  # ShortensController, or in your router and rack
-  # middleware. Be sure to keep this updated too.
   let(:valid_headers) {
-    {"Content-Type":"application/vnd.api+json"}
+    {"Content-Type":"application/vnd.api+json",
+    "Accept":"*/*"}
   }
 
   # no route, Eventually will redirect to current User urlShortens list.
@@ -100,20 +85,21 @@ RSpec.describe "/shortens", type: :request do
       shorten
     end
       it "creates a new Shorten" do
-        #body: valid_jsonapi.to_json ,
-
-        post shortens_path(raw_body: valid_jsonapi, headers: valid_headers, as: 'vnd.api+json')
-        pp '###',"shortens_path", shortens_path
-        pp "request", JSON.parse(request.body.to_json)
-        pp "request", JSON.parse(request.params.to_json),'###'
+        # valid_jsonapi = {
+        #    "type": "shortens",
+        #     "attributes": {
+        #        "slug": valid_attributes[:slug].to_s,
+        #         "full-url": valid_attributes[:full_url].to_s
+        #     }
+        #   } 
+        post shortens_path(data: valid_jsonapi), headers: valid_headers, as: 'vnd.api+json' 
+        #pp '###',"shortens_path", shortens_path
+        #pp "request", JSON.parse(request.body.to_json)
+        #pp "request", JSON.parse(request.params.to_json),'###'
+        #pp Shorten.first
+        expect(response).to have_http_status(:created)
         expect(Shorten.count).to eq(1)
-        pp Shorten.first
-        #expect(response).to have_http_status(:created)
 
-        #expect {
-        #  post shortens_url,
-        #       params: { shorten: valid_attributes }, headers: valid_headers, as: :json
-        #}.to change(Shorten, :count).by(1)
       end
 
       it "renders a JSON response with the new shorten" do
