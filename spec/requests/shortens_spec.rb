@@ -111,17 +111,11 @@ RSpec.describe "/shortens", type: :request do
     context "with invalid parameters" do
       it "does not create a new Shorten" do
         expect {
-          post shortens_url,
-               params: { shorten: invalid_attributes }, as: 'vnd.api+json'
+          post shortens_path(data: invalid_jsonapi), headers: valid_headers, as: 'vnd.api+json'
         }.to change(Shorten, :count).by(0)
+        expect(response).to have_http_status(:unprocessable_entity)
       end
 
-      it "renders a JSON response with errors for the new shorten" do
-        post shortens_url,
-             params: { shorten: invalid_attributes }, headers: valid_headers, as: 'vnd.api+json'
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to match(a_string_including("application/json"))
-      end
     end
   end
 
