@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "/shortens", type: :request do
   let(:shorten) {
-    build(:shorten, full_url: 'http://google.com')
+    create(:shorten, full_url: 'http://google.com')
   }
 
   let(:invalid_slug) {
@@ -28,6 +28,15 @@ RSpec.describe "/shortens", type: :request do
     }
   end 
 
+  let(:invalid_jsonapi) do
+    {
+      "type": "shortens",
+      "attributes": {
+        "slug": '',
+        "full-url": valid_attributes[:full_url].to_s
+      }
+    }
+  end 
   let(:valid_headers) {
     {"Content-Type":"application/vnd.api+json",
     "Accept":"*/*"}
@@ -98,16 +107,10 @@ RSpec.describe "/shortens", type: :request do
         #pp "request", JSON.parse(request.params.to_json),'###'
         #pp Shorten.first
         expect(response).to have_http_status(:created)
-        expect(Shorten.count).to eq(1)
+        expect(Shorten.count).to eq(2)
 
       end
 
-      it "renders a JSON response with the new shorten" do
-        post shortens_url,
-             params: { shorten: valid_attributes }, headers: valid_headers, as: 'vnd.api+json'
-        expect(response).to have_http_status(:created)
-        expect(response.content_type).to match(a_string_including("application/json"))
-      end
     end
 
     context "with invalid parameters" do
