@@ -37,6 +37,7 @@ RSpec.describe "/shortens", type: :request do
       }
     }
   end 
+
   let(:valid_headers) {
     {"Content-Type":"application/vnd.api+json",
     "Accept":"*/*"}
@@ -95,13 +96,6 @@ RSpec.describe "/shortens", type: :request do
       shorten
     end
       it "creates a new Shorten" do
-        # valid_jsonapi = {
-        #    "type": "shortens",
-        #     "attributes": {
-        #        "slug": valid_attributes[:slug].to_s,
-        #         "full-url": valid_attributes[:full_url].to_s
-        #     }
-        #   } 
         post shortens_path(data: valid_jsonapi), headers: valid_headers, as: 'vnd.api+json' 
         #pp '###',"shortens_path", shortens_path
         #pp "request", JSON.parse(request.body.to_json)
