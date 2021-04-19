@@ -166,8 +166,9 @@ RSpec.describe "/shortens", type: :request do
   describe "DELETE /destroy" do
     it "destroys the requested shorten" do
       shorten = Shorten.create! valid_attributes
+
       expect {
-        delete shorten_url(shorten.slug), headers: valid_headers, as: 'vnd.api+json'
+        delete shorten_url(shorten.id), headers: valid_headers, as: 'vnd.api+json'
       }.to change(Shorten, :count).by(-1)
     end
   end
