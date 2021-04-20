@@ -61,12 +61,11 @@ RSpec.describe "/shortens", type: :request do
     end
 
     it "returns a list sorted with new at the top" do
-      recent_shorten = create(:shorten)
       older_shorten = create(:shorten, created_at: 1.hour.ago)
+      recent_shorten = create(:shorten)
       get shortens_url, headers: valid_headers, as: 'vnd.api+json'
 
       ids = json_data.map{|x|x["id"].to_i}
-      pp ids
       expect(ids).to eq([recent_shorten.id, shorten.id, older_shorten.id ])
     end
   end
