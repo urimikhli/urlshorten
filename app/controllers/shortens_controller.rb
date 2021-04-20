@@ -1,6 +1,6 @@
 class ShortensController <  ApplicationController #JSONAPI::ResourceController #
   #skip_before_action :verify_authenticity_token
-  before_action :set_shorten, only: [:show]
+  before_action :set_shorten, only: [:show, :update, :destroy]
   include ShortensHelper
 
   # GET /shortens
@@ -11,9 +11,6 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
     render json: serializer.new(shorten), status: :ok
   end
 
-  def serializer
-    ShortenSerializer
-  end
 
   # GET /shortens/slug
   #this is the redirect
@@ -43,7 +40,7 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
       @shorten.update(shorten_params)
       render json: @shorten
     else
-      render json: " cant update, '#{params['id']}' not found", status: :unprocessable_entity
+      render json: " cant update, '#{params[:slug]}' not found", status: :unprocessable_entity
     end
   end
 
@@ -53,9 +50,12 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
   end
 
   private
+    def serializer
+      ShortenSerializer
+    end
     #needed for SHOW action.
     def set_shorten
-      @shorten = Shorten.find{|url| url.slug == params[:slug]}
+      @shorten = Shorten.find{|x| x.slug == params[:slug]}
     end
 
     # Only allow a list of trusted parameters through.
