@@ -1,14 +1,19 @@
-class ShortensController < JSONAPI::ResourceController # ApplicationController
-  skip_before_action :verify_authenticity_token
+class ShortensController <  ApplicationController #JSONAPI::ResourceController #
+  #skip_before_action :verify_authenticity_token
   before_action :set_shorten, only: [:show]
   include ShortensHelper
 
   # GET /shortens
   #  Eventually will redirect to current User urlShortens list '/user/shortens/'.
-  # def index
-  #   let jsonapi manage it
-  # end
+  def index
+    shorten = Shorten.recent
 
+    render json: serializer.new(shorten), status: :ok
+  end
+
+  def serializer
+    ShortenSerializer
+  end
 
   # GET /shortens/slug
   #this is the redirect
@@ -21,20 +26,31 @@ class ShortensController < JSONAPI::ResourceController # ApplicationController
 
   end
 
-  # # POST /shortens
-  # def create
-  #   let jsonapi manage it
-  # end
+  # POST /shortens
+  def create
+    @shorten = Shorten.new(shorten_params)
 
-  # # PATCH/PUT /shortens/slug
-  #  def update
-  #   let jsonapi manage it
-  #  end
+    if @shorten.save
+      render json: @shorten, status: :created, location: @shorten
+    else
+      render json: @shorten.errors, status: :unprocessable_entity
+    end
+  end
 
-  # # DELETE /shortens/1
-  # def destroy
-  #   let jsonapi manage it
-  # end
+  # PATCH/PUT /shortens/id
+  def update
+    if @shorten
+      @shorten.update(shorten_params)
+      render json: @shorten
+    else
+      render json: " cant update, '#{params['id']}' not found", status: :unprocessable_entity
+    end
+  end
+
+  # DELETE /shortens/1
+  def destroy
+    @shorten.destroy
+  end
 
   private
     #needed for SHOW action.
@@ -42,8 +58,8 @@ class ShortensController < JSONAPI::ResourceController # ApplicationController
       @shorten = Shorten.find{|url| url.slug == params[:slug]}
     end
 
-    # # Only allow a list of trusted parameters through.
-    # def shorten_params
-    #   let jsonapi manage it
-    # end
+    # Only allow a list of trusted parameters through.
+    def shorten_params
+      params.require(:shorten).permit(:slug, :full_url)
+    end
 end
