@@ -44,6 +44,19 @@ RSpec.describe Shorten, type: :model do
     it ' slug uniqueness should be case insensative' do
       expect(shorten_case).not_to be_valid
     end
+  end
 
+  describe '.recent' do
+    it ' returns in most recent order' do
+      older_shorten = create(:shorten, created_at: 1.hour.ago)
+      recent_shorten = create(:shorten)
+
+      expect(described_class.recent). to eq([recent_shorten, older_shorten])
+
+      #make sure its using created_at to sort
+      recent_shorten.update_column(:created_at, 2.hour.ago)
+      expect(described_class.recent). to eq([older_shorten, recent_shorten])
+
+    end
   end
 end
