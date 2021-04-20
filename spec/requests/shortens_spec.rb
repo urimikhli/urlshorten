@@ -56,8 +56,18 @@ RSpec.describe "/shortens", type: :request do
       aggregate_failures do
         expect(expected[:id]).to eq(shorten.id.to_s)
         expect(expected[:attributes][:slug]).to eq(shorten.slug)
-        expect(expected[:attributes][:"full-url"]).to eq(shorten.full_url)
+        expect(expected[:attributes][:"full_url"]).to eq(shorten.full_url)
       end
+    end
+
+    it "returns a list sorted with new at the top" do
+      recent_shorten = create(:shorten)
+      older_shorten = create(:shorten, created_at: 1.hour.ago)
+      get shortens_url, headers: valid_headers, as: 'vnd.api+json'
+
+      ids = json_data.map{|x|x["id"].to_i}
+      pp ids
+      expect(ids).to eq([recent_shorten.id, shorten.id, older_shorten.id ])
     end
   end
 
@@ -96,14 +106,17 @@ RSpec.describe "/shortens", type: :request do
       shorten
     end
       it "creates a new Shorten" do
-        post shortens_path(data: valid_jsonapi), headers: valid_headers, as: 'vnd.api+json' 
+        #abandoned jsonapi format for create and change
+        #post shortens_path(data: valid_jsonapi), headers: valid_headers, as: 'vnd.api+json' 
+        
+        expect { 
+          post shortens_path(shorten: valid_attributes), headers: valid_headers, as: 'vnd.api+json' 
+        }.to change(Shorten, :count).by(1)
         #pp '###',"shortens_path", shortens_path
         #pp "request", JSON.parse(request.body.to_json)
         #pp "request", JSON.parse(request.params.to_json),'###'
         #pp Shorten.first
         expect(response).to have_http_status(:created)
-        expect(Shorten.count).to eq(2)
-
       end
 
     end
