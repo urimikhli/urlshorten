@@ -19,18 +19,18 @@ RSpec.describe ShortensController, type: :routing do
     end
 
     it "routes to #update via PUT" do
-      expect(get: "/shortens/6").not_to route_to("shortens#update", id: "6")
-      expect(put: "/shortens/myslug").to route_to("shortens#update", id: "myslug")
+      expect(get: "/shortens/6").not_to route_to("shortens#update", slug: "6")
+      expect(put: "/shortens/myslug").to route_to("shortens#update", slug: "myslug")
     end
 
     it "routes to #update via PATCH" do
-      expect(get: "/shortens/6").not_to route_to("shortens#update", id: "6")
-      expect(patch: "/shortens/myslug").to route_to("shortens#update", id: "myslug")
+      expect(get: "/shortens/6").not_to route_to("shortens#update", slug: "6")
+      expect(patch: "/shortens/myslug").to route_to("shortens#update", slug: "myslug")
     end
 
     it "routes to #destroy" do
-      expect(get: "/shortens/6").not_to route_to("shortens#destroy", id: "6")
-      expect(delete: "/shortens/myslug").to route_to("shortens#destroy", id: "myslug")
+      expect(get: "/shortens/6").not_to route_to("shortens#destroy", slug: "6")
+      expect(delete: "/shortens/myslug").to route_to("shortens#destroy", slug: "myslug")
     end
   end
 end
