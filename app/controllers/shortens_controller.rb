@@ -2,15 +2,14 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
   #skip_before_action :verify_authenticity_token
   before_action :set_shorten, only: [:show, :update, :destroy]
   include ShortensHelper
+  include Paginable
 
   # GET /shortens
   #  Eventually will redirect to current User urlShortens list '/user/shortens/'.
   def index
-    shorten = Shorten.recent
-
-    render json: serializer.new(shorten), status: :ok
+    paginated = paginate( Shorten.recent )
+    render_paginated_collection(paginated)
   end
-
 
   # GET /shortens/slug
   #this is the redirect
@@ -53,6 +52,7 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
     def serializer
       ShortenSerializer
     end
+
     #needed for SHOW action.
     def set_shorten
       @shorten = Shorten.find{|x| x.slug == params[:slug]}
