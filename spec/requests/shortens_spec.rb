@@ -51,8 +51,8 @@ RSpec.describe "/shortens", type: :request do
     it "renders a list of shortens objects" do
       get shortens_url, headers: valid_headers, as: 'vnd.api+json'
       expect(response).to be_successful
-      expect(json.length).to eq(1)
-      expected = json_data.first.deep_symbolize_keys
+      expect(json_data.length).to eq(1)
+      expected = json_data.first
       aggregate_failures do
         expect(expected[:id]).to eq(shorten.id.to_s)
         expect(expected[:attributes][:slug]).to eq(shorten.slug)
@@ -65,8 +65,21 @@ RSpec.describe "/shortens", type: :request do
       recent_shorten = create(:shorten)
       get shortens_url, headers: valid_headers, as: 'vnd.api+json'
 
-      ids = json_data.map{|x|x["id"].to_i}
+      ids = json_data.map{|x|x[:id].to_i}
       expect(ids).to eq([recent_shorten.id, shorten.id, older_shorten.id ])
+    end
+
+    it 'paginates results' do
+      short1, short2, short3 = create_list(:shorten, 3)
+      get shortens_url, params: {page: {number:2, size: 1} }
+      expect(json_data.length).to eq(1)
+      expect(json_data.first[:id]).to eq(short2.id.to_s)
+    end
+    it 'contains pagination links' do
+      short1, short2, short3 = create_list(:shorten, 3)
+      get shortens_url, params: {page: {number:2, size: 1} }
+      expect(json[:links].length).to eq(5)
+      expect(json[:links].keys).to contain_exactly(:first,:prev,:next,:last,:self)
     end
   end
 
