@@ -93,7 +93,7 @@ RSpec.describe "/shortens", type: :request do
     it "renders 404 when slug is not found" do
       get shorten_url(invalid_slug.slug)
       expect(response).to have_http_status(:not_found)
-      expect(response.body).to match(a_string_including("not found"))
+      expect(json_errors[:title]).to eq("Record Not found")
     end
 
     it "When redirecting, passes along parameters along with the slug" do

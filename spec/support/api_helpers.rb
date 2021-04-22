@@ -8,4 +8,8 @@ module ApiHelpers
         json[:data]
     end
 
+    def json_errors
+        json[:errors].first
+    end
+
 end
