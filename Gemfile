@@ -28,6 +28,7 @@ gem 'bootsnap', '>= 1.4.4', require: false
 gem 'jsom-pagination'
 gem 'jsonapi-serializer'
 gem 'jsonapi_errors_handler'
+gem 'octokit', '~> 4.0'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
