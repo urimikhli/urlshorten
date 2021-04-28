@@ -9,15 +9,14 @@ class ApplicationController < ActionController::API
     )
     rescue_from ::StandardError, with: lambda { |e| handle_error(e) }
 
-
-    def errors(code)
+    def errors(error_hash)
       {
         errors: [{
-          status: code,
-          title: "Record Not found",
-          detail: "Could not find record",
+          status: error_hash[:status],
+          title: error_hash[:title],
+          detail: error_hash[:detail],
           source: {
-            pointer: "/request/url/:id"
+            pointer: error_hash[:pointer]
           }
         }]
       }

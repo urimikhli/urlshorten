@@ -17,7 +17,10 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
     if @shorten
       redirect_to generate_url(@shorten.full_url, request.query_parameters)
     else
-      render json: errors(404), status: :not_found
+      render json: errors(status: 404,
+        title: "Record Not found",
+        detail: "Could not find record",
+        pointer: "/request/url/:id" ), status: :not_found
     end
 
   end
