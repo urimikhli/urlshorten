@@ -18,13 +18,29 @@ RSpec.describe "/shortens", type: :request do
     bad_attributes_for(attributes_for(:shorten))
   }
 
+  let(:valid_jsonapi) do
+    {
+      "type": "shortens",
+      "attributes": {
+        "slug": valid_attributes[:slug].to_s,
+        "full-url": valid_attributes[:full_url].to_s
+      }
+    }
+  end 
 
-  # This should return the minimal set of values that should be in the headers
-  # in order to pass any filters (e.g. authentication) defined in
-  # ShortensController, or in your router and rack
-  # middleware. Be sure to keep this updated too.
+  let(:invalid_jsonapi) do
+    {
+      "type": "shortens",
+      "attributes": {
+        "slug": '',
+        "full-url": valid_attributes[:full_url].to_s
+      }
+    }
+  end 
+
   let(:valid_headers) {
-    {}
+    {"Content-Type":"application/vnd.api+json",
+    "Accept":"*/*"}
   }
 
   # no route, Eventually will redirect to current User urlShortens list.
@@ -33,15 +49,37 @@ RSpec.describe "/shortens", type: :request do
       shorten
     end
     it "renders a list of shortens objects" do
-      get shortens_url, headers: valid_headers, as: :json
+      get shortens_url, headers: valid_headers, as: 'vnd.api+json'
       expect(response).to be_successful
-      expect(json.length).to eq(1)
-      expected = json.first.deep_symbolize_keys
+      expect(json_data.length).to eq(1)
+      expected = json_data.first
       aggregate_failures do
-        expect(expected[:id]).to eq(shorten.id)
-        expect(expected[:slug]).to eq(shorten.slug)
-        expect(expected[:full_url]).to eq(shorten.full_url)
+        expect(expected[:id]).to eq(shorten.id.to_s)
+        expect(expected[:attributes][:slug]).to eq(shorten.slug)
+        expect(expected[:attributes][:"full_url"]).to eq(shorten.full_url)
       end
+    end
+
+    it "returns a list sorted with new at the top" do
+      older_shorten = create(:shorten, created_at: 1.hour.ago)
+      recent_shorten = create(:shorten)
+      get shortens_url, headers: valid_headers, as: 'vnd.api+json'
+
+      ids = json_data.map{|x|x[:id].to_i}
+      expect(ids).to eq([recent_shorten.id, shorten.id, older_shorten.id ])
+    end
+
+    it 'paginates results' do
+      short1, short2, short3 = create_list(:shorten, 3)
+      get shortens_url, params: {page: {number:2, size: 1} }
+      expect(json_data.length).to eq(1)
+      expect(json_data.first[:id]).to eq(short2.id.to_s)
+    end
+    it 'contains pagination links' do
+      short1, short2, short3 = create_list(:shorten, 3)
+      get shortens_url, params: {page: {number:2, size: 1} }
+      expect(json[:links].length).to eq(5)
+      expect(json[:links].keys).to contain_exactly(:first,:prev,:next,:last,:self)
     end
   end
 
@@ -55,7 +93,7 @@ RSpec.describe "/shortens", type: :request do
     it "renders 404 when slug is not found" do
       get shorten_url(invalid_slug.slug)
       expect(response).to have_http_status(:not_found)
-      expect(response.body).to match(a_string_including("not found"))
+      expect(json_errors[:title]).to eq("Record Not found")
     end
 
     it "When redirecting, passes along parameters along with the slug" do
@@ -75,61 +113,53 @@ RSpec.describe "/shortens", type: :request do
 
   describe "POST /create" do
     context "with valid parameters" do
+
+    before :each do
+      shorten
+    end
       it "creates a new Shorten" do
-        expect {
-          post shortens_url,
-               params: { shorten: valid_attributes }, headers: valid_headers, as: :json
+        #abandoned jsonapi format for create and change
+        #post shortens_path(data: valid_jsonapi), headers: valid_headers, as: 'vnd.api+json' 
+        
+        expect { 
+          post shortens_path(shorten: valid_attributes), headers: valid_headers, as: 'vnd.api+json' 
         }.to change(Shorten, :count).by(1)
+        #pp '###',"shortens_path", shortens_path
+        #pp "request", JSON.parse(request.body.to_json)
+        #pp "request", JSON.parse(request.params.to_json),'###'
+        #pp Shorten.first
+        expect(response).to have_http_status(:created)
       end
 
-      it "renders a JSON response with the new shorten" do
-        post shortens_url,
-             params: { shorten: valid_attributes }, headers: valid_headers, as: :json
-        expect(response).to have_http_status(:created)
-        expect(response.content_type).to match(a_string_including("application/json"))
-      end
     end
 
     context "with invalid parameters" do
       it "does not create a new Shorten" do
-        expect {
-          post shortens_url,
-               params: { shorten: invalid_attributes }, as: :json
-        }.to change(Shorten, :count).by(0)
+        post shortens_path(shorten: invalid_attributes), headers: valid_headers, as: 'vnd.api+json'
+        #expect {
+          #abandoned jsonapi format for create and change
+          #post shortens_path(data: invalid_jsonapi), headers: valid_headers, as: 'vnd.api+json'
+        #}.to change(Shorten, :count).by(0)
+        expect(response).to have_http_status(:unprocessable_entity)
       end
 
-      it "renders a JSON response with errors for the new shorten" do
-        post shortens_url,
-             params: { shorten: invalid_attributes }, headers: valid_headers, as: :json
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to match(a_string_including("application/json"))
-      end
     end
   end
 
   describe "PATCH /update" do
-    let(:new_attributes) {
-      { full_url: "http://new/url/",
-        slug: 'validSlug'
-      }
-    }
-
     it "updates the requested shorten" do
-      shorten = Shorten.create! valid_attributes
-      expect {
-        patch shorten_url(shorten.slug),
-            params: { shorten: new_attributes }, headers: valid_headers, as: :json
-        shorten.reload
-      }.to change(Shorten, :count).by(0)
+      patch shortens_path + "/#{shorten.slug}", params: {shorten: {slug: 'newwfoo'} }
       expect(response).to have_http_status(:ok)
-      expect(response.content_type).to match(a_string_including("application/json"))
+      patched = Shorten.find(shorten.id)
+      expect(patched.slug).to eq('newwfoo')
     end
 
+    #cant test invalid until vaild test works
     context "with invalid parameters" do
       it "renders a JSON response with errors for the shorten" do
         shorten = Shorten.create! valid_attributes
         patch shorten_url(shorten),
-              params: { shorten: invalid_attributes }, headers: valid_headers, as: :json
+              params: { shorten: invalid_attributes }, headers: valid_headers, as: 'vnd.api+json'
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
@@ -139,8 +169,9 @@ RSpec.describe "/shortens", type: :request do
   describe "DELETE /destroy" do
     it "destroys the requested shorten" do
       shorten = Shorten.create! valid_attributes
+
       expect {
-        delete shorten_url(shorten.slug), headers: valid_headers, as: :json
+        delete shorten_url(shorten.slug), headers: valid_headers, as: 'vnd.api+json'
       }.to change(Shorten, :count).by(-1)
     end
   end
@@ -148,7 +179,7 @@ RSpec.describe "/shortens", type: :request do
   private
 
   def bad_attributes_for(bad_values)
-    bad_values['slug']=''
+    bad_values[:slug]=''
     bad_values
   end
 end
