@@ -9,7 +9,7 @@ module ApiHelpers
     end
 
     def json_errors
-        json[:errors].first
+        json[:errors].try(:first)
     end
 
 end
