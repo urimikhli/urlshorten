@@ -2,30 +2,8 @@ require 'rails_helper'
 
 RSpec.describe "AccessTokens", type: :request do
     describe '#create' do
-      shared_examples_for "unautherized requests" do
-        let(:error) do
-          {
-            errors: [{
-              status: 401,
-                title: "Authentication code is not valid",
-                detail: "Provide a valid code in order to login",
-                source: {
-                  pointer: "/code"
-                }
-              }]
-          }
-        end     
-        it 'should return status 401 (not modified) ' do
-          subject
-          expect(response).to have_http_status(401)
-        end
 
-        it 'should render the error json' do
-          subject
-          expect(json_errors).to eq(error[:errors].first)
-        end
-      end
-      context 'whwn no code provided' do
+      context 'when no code provided' do
           subject { post '/login' }
           it_behaves_like "unautherized requests"
       end
