@@ -1,6 +1,7 @@
 class ShortensController <  ApplicationController #JSONAPI::ResourceController #
   #skip_before_action :verify_authenticity_token
   before_action :set_shorten, only: [:show, :update, :destroy]
+  skip_before_action :authorize! #, only: [:show]
   include ShortensHelper
   include Paginable
 

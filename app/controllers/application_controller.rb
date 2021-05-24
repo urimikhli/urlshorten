@@ -5,6 +5,7 @@ class ApplicationController < ActionController::API
     rescue_from UserAuthenticator::AuthenticationError, with: :authentication_error
     rescue_from AuthorizationError, with: :authorization_error
     include JsonapiErrorsHandler
+    before_action :authorize!
 
     # ErrorMapper.map_errors!(
     #     'ActiveRecord::RecordNotFound' =>
@@ -34,6 +35,10 @@ class ApplicationController < ActionController::API
 
     def current_user
       @current_user = access_token&.user
+    end
+
+    def authorize!
+      raise AuthorizationError unless current_user
     end
 
     def authentication_error
