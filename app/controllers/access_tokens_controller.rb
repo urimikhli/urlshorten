@@ -7,6 +7,9 @@ class AccessTokensController < ApplicationController
       render json: serializer.new(authenticator.access_token), status: :created
   end
 
+  def destroy
+    current_user.access_token.destroy
+  end
 
   private
 

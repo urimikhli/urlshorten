@@ -52,6 +52,31 @@ RSpec.describe "AccessTokens", type: :request do
           )
         end
       end
+    end
+
+    describe '#destroy' do
+      context 'when invalid request provided(no autherization header)' do
+        subject {delete '/logout'}
+        it_behaves_like "forbidden_requests"
+      end
+
+      context 'when invalid  autherization header in requst' do
+        #before { request.headers['authorization'] = "invalid token" }
+        subject {delete '/logout', headers: {authorization: "invalid token"}}
+        it_behaves_like "forbidden_requests"
+      end
+
+      context 'when valid request provided' do
+        let(:user) {create :user}
+        let(:access_token) {user.create_access_token}
+
+        it 'should remove the access token and have no return content (204)' do
+          bearer_auth = "Bearer #{access_token.token}"
+          expect{ delete '/logout', headers: {authorization: bearer_auth} }.to change(AccessToken, :count).by(-1)
+          expect(response).to have_http_status(:no_content)
+        end
+
+      end
 
     end
 end
