@@ -54,11 +54,11 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
       @shorten.update(shorten_params)
       render json: @shorten
     else
-      render json: errors(status: 422,
-        title: "Unable to process",
-        detail: ":slug cant be blank",
-        pointer: "/data/attributes/" ), status: :unprocessable_entity
-      #render json: " cant update, '#{params[:slug]}' not found", status: :unprocessable_entity
+      render_unprocessable_errors({
+          title: "Unable to process update",
+          error_list: ":slug is missing or doesnt exist",
+          pointer: "/data/attributes/"
+      })
     end
   end
 

@@ -185,6 +185,11 @@ RSpec.describe "/shortens", type: :request do
         patch shorten_url(shorten),
               params: { shorten: invalid_attributes }, headers: valid_headers.merge(authorization: bearer_auth)
         expect(response).to have_http_status(:unprocessable_entity)
+        expect(json_errors).to include(
+            :status=>422,
+            :title=>"Unable to process update",
+            :detail=>":slug is missing or doesnt exist",
+            :source=>{:pointer=>"/data/attributes/"})
       end
     end
   end
