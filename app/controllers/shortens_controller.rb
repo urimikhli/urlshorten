@@ -1,7 +1,7 @@
 class ShortensController <  ApplicationController #JSONAPI::ResourceController #
   #skip_before_action :verify_authenticity_token
   before_action :set_shorten, only: [:show, :update, :destroy]
-  skip_before_action :authorize! ##, only: [:show]
+  skip_before_action :authorize!, only: [:show]
   include ShortensHelper
   include Paginable
 
@@ -33,7 +33,11 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
     if @shorten.save
       render json: serializer.new(@shorten), status: :created, location: @shorten
     else
-      render json: @shorten.errors, status: :unprocessable_entity
+      render json: errors(status: 422,
+        title: "Unable to process",
+        detail: @shorten.errors,
+        pointer: "/data/attributes/" ), status: :unprocessable_entity
+      #render json: @shorten.errors, status: :unprocessable_entity
     end
   end
 
@@ -43,7 +47,11 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
       @shorten.update(shorten_params)
       render json: @shorten
     else
-      render json: " cant update, '#{params[:slug]}' not found", status: :unprocessable_entity
+      render json: errors(status: 422,
+        title: "Unable to process",
+        detail: ":slug cant be blank",
+        pointer: "/data/attributes/" ), status: :unprocessable_entity
+      #render json: " cant update, '#{params[:slug]}' not found", status: :unprocessable_entity
     end
   end
 
