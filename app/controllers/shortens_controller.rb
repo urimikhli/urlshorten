@@ -31,7 +31,7 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
     @shorten = Shorten.new(shorten_params)
 
     if @shorten.save
-      render json: @shorten, status: :created, location: @shorten
+      render json: serializer.new(@shorten), status: :created, location: @shorten
     else
       render json: @shorten.errors, status: :unprocessable_entity
     end
