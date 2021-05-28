@@ -141,7 +141,7 @@ RSpec.describe "/shortens", type: :request do
           expect(response).to have_http_status(:unprocessable_entity)
           expect(json_errors).to include(
             :status=>422,
-            :title=>"Unable to process",
+            :title=>"Unable to process, Invalid attributes",
             :detail=>{:slug=>["can't be blank"]},
             :source=>{:pointer=>"/data/attributes/"}
           )
@@ -179,7 +179,6 @@ RSpec.describe "/shortens", type: :request do
       expect(patched.slug).to eq('newwfoo')
     end
 
-    #cant test invalid until vaild test works
     context "with invalid parameters" do
       it "renders a JSON response with errors for the shorten" do
         shorten = Shorten.create! valid_attributes

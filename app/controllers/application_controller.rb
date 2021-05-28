@@ -60,4 +60,12 @@ class ApplicationController < ActionController::API
                     pointer: "/header/authorization") ,
                 status: :forbidden
     end
+
+    def render_unprocessable_errors(error)
+      render json: errors(
+        status: 422,
+        title: error[:title],
+        detail: error[:error_list],
+        pointer: error[:pointer] ), status: :unprocessable_entity
+    end
 end

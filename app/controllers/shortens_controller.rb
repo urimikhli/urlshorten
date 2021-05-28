@@ -29,15 +29,22 @@ class ShortensController <  ApplicationController #JSONAPI::ResourceController #
   # POST /shortens
   def create
     @shorten = Shorten.new(shorten_params)
-
-    if @shorten.save
-      render json: serializer.new(@shorten), status: :created, location: @shorten
-    else
-      render json: errors(status: 422,
-        title: "Unable to process",
-        detail: @shorten.errors,
-        pointer: "/data/attributes/" ), status: :unprocessable_entity
-      #render json: @shorten.errors, status: :unprocessable_entity
+    if @shorten.valid?
+      if @shorten.save
+        render json: serializer.new(@shorten), status: :created, location: @shorten
+      else #unable to save
+        render_unprocessable_errors({
+            title: "Unable to Create record",
+            error_list: @shorten.errors,
+            pointer: "/shortens/:create"
+        })
+      end
+    else #invalid attributes
+      render_unprocessable_errors({
+          title: "Unable to process, Invalid attributes",
+          error_list: @shorten.errors,
+          pointer: "/data/attributes/"
+      })
     end
   end
 
