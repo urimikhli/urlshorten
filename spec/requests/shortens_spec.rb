@@ -1,8 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe "/shortens", type: :request do
+  let(:user) {create :user}
+  let(:access_token) {user.create_access_token}
+  let(:bearer_auth) {"Bearer #{access_token.token}"}
+
   let(:shorten) {
-    create(:shorten, full_url: 'http://google.com')
+    create(:shorten, full_url: 'http://google.com', user: user)
   }
 
   let(:invalid_slug) {
@@ -46,9 +50,6 @@ RSpec.describe "/shortens", type: :request do
     "Accept":"*/*"}
   }
 
-  let(:user) {create :user}
-  let(:access_token) {user.create_access_token}
-  let(:bearer_auth) {"Bearer #{access_token.token}"}
 
   describe "GET /index" do
     before :each do
@@ -149,16 +150,13 @@ RSpec.describe "/shortens", type: :request do
       end
 
       context "when valid parameters provided" do
-        it "creates a new Shorten" do
+        it "creates a new Shorten with valid attributes" do
           bearer_auth = "Bearer #{access_token.token}"
           expect { 
             post shortens_path(shorten: valid_attributes), headers: {authorization: bearer_auth}, as: 'vnd.api+json' 
           }.to change(Shorten, :count).by(1)
-          #pp '###',"shortens_path", shortens_path
-          #pp "request", JSON.parse(request.body.to_json)
-          #pp "request", JSON.parse(request.params.to_json),'###'
-          #pp Shorten.first
           expect(response).to have_http_status(:created)
+          expect(json_data[:attributes]).to include(valid_attributes)
         end
       end
 
@@ -167,40 +165,99 @@ RSpec.describe "/shortens", type: :request do
   end
 
   describe "PATCH /update" do
-    it "updates the requested shorten" do
-      #patch shortens_path + "/#{shorten.slug}", params: {shorten: {slug: 'newwfoo'} }
-      before_patch = Shorten.find(shorten.id)
-      expect(before_patch.slug).to eq(shorten.slug)
-
-      patch shorten_path(shorten.slug, params: {shorten: {slug: 'newwfoo'} }), headers: valid_headers.merge(authorization: bearer_auth)
-      expect(response).to have_http_status(:ok)
-      
-      patched = Shorten.find(shorten.id)
-      expect(patched.slug).to eq('newwfoo')
+    context 'When unauthorized, no code provided' do
+      subject{ patch shorten_path(shorten.slug, params: {shorten: {slug: 'newwfoo'} }) }
+      it_behaves_like 'forbidden_requests'
     end
 
-    context "with invalid parameters" do
-      it "renders a JSON response with errors for the shorten" do
-        shorten = Shorten.create! valid_attributes
-        patch shorten_url(shorten),
-              params: { shorten: invalid_attributes }, headers: valid_headers.merge(authorization: bearer_auth)
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_errors).to include(
-            :status=>422,
-            :title=>"Unable to process update",
-            :detail=>":slug is missing or doesnt exist",
-            :source=>{:pointer=>"/data/attributes/"})
+    context 'When unauthorized, Invalid code provided' do
+      subject{ patch shorten_path(shorten.slug, params: {shorten: {slug: 'newwfoo'} }),
+            headers: valid_headers.merge(authorization: "invalid token") }
+      it_behaves_like 'forbidden_requests'
+    end
+
+    context 'When authorized' do
+      before do
+        user
+        #access_token
       end
+
+      it "updates the requested shorten" do
+        patch shorten_path(shorten.slug, params: {shorten: {slug: 'newwfoo'} }),
+          headers: valid_headers.merge(authorization: bearer_auth)
+        expect(response).to have_http_status(:ok)
+        expect(json_data[:attributes]).to include({slug: 'newwfoo'})
+        
+        expect(shorten.reload.slug).to eq('newwfoo')
+      end
+
+      context "with invalid parameters" do
+        it "renders a JSON response with errors for the shorten" do
+          patch shorten_path(shorten.slug, params: {shorten: {slug: ''} }),
+            headers: valid_headers.merge(authorization: bearer_auth)
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(json_errors).to include(
+              :status=>422,
+              :title=>"Unable to process update",
+              :detail=>{:slug=>["can't be blank"]},
+              :source=>{:pointer=>"/data/attributes/"})
+        end
+      end
+
+      context 'when trying to update a not owned shorten' do
+        let(:other_shorten) {create :shorten}
+
+        #remember bearer_auth is for user not other_user
+        subject{ patch shorten_path(other_shorten.slug, params: {shorten: {slug: 'newwfoo'} }),
+            headers: valid_headers.merge(authorization: bearer_auth) }
+        it_behaves_like 'forbidden_requests'
+      end
+
     end
   end
 
   describe "DELETE /destroy" do
-    it "destroys the requested shorten" do
-      shorten = Shorten.create! valid_attributes
+    context 'When unauthorized, no code provided' do
+      subject{ delete shorten_url(shorten.slug),
+         headers: valid_headers, as: 'vnd.api+json' }
+      it_behaves_like 'forbidden_requests'
+    end
 
-      expect {
-        delete shorten_url(shorten.slug), headers: valid_headers.merge(authorization: bearer_auth), as: 'vnd.api+json'
-      }.to change(Shorten, :count).by(-1)
+    context 'When unauthorized, Invalid code provided' do
+      subject{ delete shorten_url(shorten.slug),
+            headers: valid_headers.merge(authorization: "invalid token") }
+      it_behaves_like 'forbidden_requests'
+    end
+
+    context 'when authorized' do
+      before do
+        shorten
+      end
+      context 'when trying to delete an owned shorten' do
+        subject {  delete shorten_url(shorten.slug),
+            headers: valid_headers.merge(authorization: bearer_auth), as: 'vnd.api+json' }
+        it "destroys the requested shorten" do
+          expect {  
+            subject
+          }.to change{ user.shortens.count}.by(-1)
+            expect(response).to have_http_status(:no_content)
+            expect(response.body).to be_blank
+        end
+      end
+
+      context 'when trying to delete a not owned shorten' do
+        let(:other_shorten) {create :shorten}
+        #remember bearer_auth is for user not other_user
+        subject {delete shorten_url(other_shorten.slug),
+              headers: valid_headers.merge(authorization: bearer_auth), as: 'vnd.api+json' }
+        it_behaves_like 'forbidden_requests'
+      end
+
+      context 'when trying to delete a shorten that doesnt exist' do
+        subject {  delete shorten_url('badSlug'),
+            headers: valid_headers.merge(authorization: bearer_auth), as: 'vnd.api+json' }
+        it_behaves_like 'forbidden_requests'
+      end
     end
   end
 
